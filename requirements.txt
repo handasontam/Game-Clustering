@@ -1,0 +1,7 @@
+python-igraph==0.7.1.post6
+networkx==2.1
+numpy==1.14.2
+numpydoc==0.7.0
+tqdm==4.23.4
+joblib==0.11
+

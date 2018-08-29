@@ -30,7 +30,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='finding the alpha-beta dominant communities')
     parser.add_argument('--cpu', type=int, required=True, help='number of cpu core to run the algorithm in parallel')
     parser.add_argument('--data', type=str, required=True, help='the file path of the graph data')
-    parser.add_argument('--label', type=str, required=False, help='the file path of the label')
     parser.add_argument('--output', type=str, required=True, help='the output directory')
     # boolean argument deciding whether the graph is directed/undirected
     parser.add_argument('--directed', dest='directed', action='store_true')
