@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "bin/ibfs.test/gcc-5.4.0/debug/main.py", line 8, in <module>
+    graph.initSize(2)
+Boost.Python.ArgumentError: Python argument types in
+    IBFSGraph.initSize(IBFSGraph, int)
+did not match C++ signature:
+    initSize(IBFS::IBFSGraph {lvalue}, int, int)
+
+EXIT STATUS: 1
