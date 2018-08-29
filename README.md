@@ -43,3 +43,16 @@ optional arguments:
   --unweighted
   --beta BETA      the beta value to use, range: [0,1]
 ```
+
+# Example Usage
+```
+# data/example_graph.txt
+1 2 1
+3 4 1
+4 5 1
+5 3 1
+```
+
+```bash
+$ python run_experiment.py --cpu 2 --data data/example_graph.txt --output /tmp --undirected --weighted --beta 0.5
+```
