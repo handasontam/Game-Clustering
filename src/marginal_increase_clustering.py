@@ -1,5 +1,3 @@
-from ctypes import *
-lib1 = cdll.LoadLibrary('./ibfs_python3/libboost_python35.so.1.67.0')
 import networkx as nx
 import numpy as np
 from itertools import chain

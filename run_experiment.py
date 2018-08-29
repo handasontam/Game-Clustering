@@ -1,7 +1,9 @@
+from ctypes import *
+lib1 = cdll.LoadLibrary('ibfs_python3/libboost_python35.so.1.67.0')
 import argparse
 import networkx as nx
-from marginal_increase_clustering import MarginalIncreaseClustering
-from data_preprocess import get_graph_from_data
+from src.marginal_increase_clustering import MarginalIncreaseClustering
+from src.data_preprocess import get_graph_from_data
 import numpy as np
 import os
 import pickle
