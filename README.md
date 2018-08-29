@@ -15,3 +15,28 @@ $ source activate abclustering
 $ pip install -r requirements.txt
 $ python train_marginal_increase_clustering.py --cpu 2 --data data/example_graph.txt --output /tmp --undirected --weighted --beta 0.5  # example
 ```
+
+# Usage
+``` bash
+$ python train_marginal_increase_clustering.py -h                                                                                    
+```
+
+```
+usage: train_marginal_increase_clustering.py [-h] --cpu CPU --data DATA
+                                             --output OUTPUT [--directed]
+                                             [--undirected] [--weighted]
+                                             [--unweighted] --beta BETA
+
+finding the alpha-beta dominant communities
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --cpu CPU        number of cpu core to run the algorithm in parallel
+  --data DATA      the file path of the graph data
+  --output OUTPUT  the output directory
+  --directed
+  --undirected
+  --weighted
+  --unweighted
+  --beta BETA      the beta value to use, range: [0,1]
+```
