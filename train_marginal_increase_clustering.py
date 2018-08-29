@@ -7,7 +7,7 @@ import os
 import pickle
 
 
-def run(core, data_path, label_path, directed, weighted, beta, output_path, ignore_nodes=[], verbose=1):
+def run(core, data_path, directed, weighted, beta, output_path, ignore_nodes=[], verbose=1):
     """
     Process the data into networkx DiGraph and run the algorithm
     :param core:
@@ -47,5 +47,4 @@ if __name__ == '__main__':
 
     print(args)
     print(args.data)
-    run(core=args.cpu, data_path=args.data, label_path=args.label, directed=args.directed, weighted=args.weighted, beta=args.beta, output_path=args.output)
-    # best_partition(core=args.cpu, data_path=args.data, label_path=args.label, directed=args.directed, weighted=args.weighted, beta=args.beta)
+    run(core=args.cpu, data_path=args.data, directed=args.directed, weighted=args.weighted, beta=args.beta, output_path=args.output)
