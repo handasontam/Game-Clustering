@@ -4,8 +4,8 @@ Marginal Increase Clustering
 [Ali Al-Bashabsheh](entropyali@gmail.com)  
 [Handason Tam](handasontam@gmail.com)  
 And big thanks to 
-[Zhao Chao](yocopy@outlook.com)
-And thanks also to the implementation of Incremental Breadth-First Search 
+[Zhao Chao](yocopy@outlook.com)  
+And thanks also to the implementation of Incremental Breadth-First Search   
 "Maximum Flows By Incremental Breadth-First Search" A.V. Goldberg, S.Hed, H. Kaplan, R.E. Tarjan, and R.F. Werneck
 
 
