@@ -3,5 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+experiments/
+lfr_experiment.py
 
 .vscode/

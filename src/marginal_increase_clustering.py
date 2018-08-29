@@ -52,13 +52,12 @@ class MarginalIncreaseClustering(object):
 
     def get_vertex_id_mapping(self, ignore_nodes):
         vertices = set(self.G) - set(ignore_nodes)
-        get_v_from_id = np.array(list(vertices))
         get_id_from_v = {v:x for x, v in enumerate(vertices)}
-        return get_v_from_id, get_id_from_v
+        return get_id_from_v
 
     def find_a_b_communitites_ibfs(self, j, alpha, ignore_nodes, verbose):
         all_ignore_nodes = [j] + list(ignore_nodes)
-        _, get_id_from_v = self.get_vertex_id_mapping(all_ignore_nodes)
+        get_id_from_v = self.get_vertex_id_mapping(all_ignore_nodes)
         # num_edges_between_ignore_nodes = self.G.subgraph
         num_edges_between_ignore_nodes = 0
         for edge in self.G.subgraph(set(self.G) - set(all_ignore_nodes)).edges():
@@ -78,13 +77,11 @@ class MarginalIncreaseClustering(object):
         j_aug.initGraph()
         # max-flow using IBFS
         mf = j_aug.computeMaxFlow()
-
         sink_label = [j]
         # add all vertex that is NOT on the source side (i.e. all vertex in the sink side)
         for v in (set(self.G) - set(all_ignore_nodes)):
             if not j_aug.isNodeOnSrcSide(get_id_from_v[v]):
                 sink_label.append(v)
-        # print(time.time()-start)
         return mf, frozenset(sink_label)
 
     def directed_cut_size(self, S, T=None):
@@ -132,11 +129,11 @@ class MarginalIncreaseClustering(object):
                                                         c2=f_0_c2)
 
             # communities of the intersection
-            mincut, community = self.find_a_b_communitites_ibfs(j=j, alpha=alpha_bar, ignore_nodes=ignore_nodes,
+            _, community = self.find_a_b_communitites_ibfs(j=j, alpha=alpha_bar, ignore_nodes=ignore_nodes,
                                                     verbose=verbose)
             f_alpha_intersection = self.f_a_b(community=community, alpha=alpha_bar)
 
-            if verbose == 2:
+            if verbose>=2:
                 print('f_0_c1         ', f_0_c1)
                 print('f_0_c2         ', f_0_c2)
                 print('community_1    ')
@@ -201,7 +198,6 @@ class MarginalIncreaseClustering(object):
             keys are integers, denoting the cardinality
             values are the alpha values,
         """
-        # ignore_nodes=list(range(500,1000))
         # initialize
         best_ps = defaultdict(set)
         best_alpha = {}
@@ -297,23 +293,11 @@ class MarginalIncreaseClustering(object):
         """
         Discover weaker communities recursively until there are only
         stop_n_node unlabled nodes
-        Parameters
-        -----------
-        G: a networkx DiGraph
-        beta: float, [0,1]
-            the beta value in alpha-beta communities
-        stop_n_node: stop when number of unlablled value is smaller then this value
-        weight: float, optional
-            the attribute of edge that contains the weight
-        verbose : int, default: 0
-            control how much output message to show, can be 0, 1 or 2
         -----------
         Return
-        labels : 
-            nparray of size equal to the number of nodes in G, 
-            values are the label of the node, nodes in the same partition
-            with have the same label.
-            noise will be denoted by -1
+        solutions : dict
+            keys are alpha lower bound
+            values are set of set: denoting the partition
         """
         self.solutions = {}  # key: alpha lower bound, value: frozenset(frozenset(), ...), not include singleton
 
@@ -323,13 +307,22 @@ class MarginalIncreaseClustering(object):
             B, alphas = self.find_dominate_community(ignore_nodes=self.get_value_by_alpha(self.ignore_nodes, alpha_prime))
             B_alpha = {alphas[cardinality]: B[cardinality] for cardinality in B.keys()}
             alphas_to_consider = set(alphas.values()).union(set(self.solutions.keys()))
-            alphas_to_consider = {a for a in alphas_to_consider if a >= 0}
+            alphas_to_consider = {a for a in alphas_to_consider if a >= 0}  # only consider alpha >= 0
             for alpha in sorted(alphas_to_consider, reverse=True):
-                community = self.get_value_by_alpha(B_alpha, alpha)
-                for c in community:
+                for c in self.get_value_by_alpha(B_alpha, alpha):
                     if not c.issubset(self.get_value_by_alpha(self.ignore_nodes, alpha)):
                         self.solutions[alpha] = self.get_value_by_alpha(self.solutions, alpha).union(frozenset([c]))
                     self.ignore_nodes[alpha] = self.get_value_by_alpha(self.ignore_nodes, alpha).union(set(c))
             alpha_prime = self.get_alpha_prime()
+            # break
+        
+        # remove duplicate
+        duplicate_key = []
+        alphas = sorted(list(self.solutions.keys()))
+        for a_1, a_2 in zip(alphas[0:-1], alphas[1:]):
+            if self.solutions[a_1] == self.solutions[a_2]:
+                duplicate_key.append(a_2)
+        for key in duplicate_key:
+            del self.solutions[key]
         return self.solutions
 
