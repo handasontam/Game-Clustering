@@ -5,7 +5,6 @@ import numpy as np
 from itertools import chain
 # from functools import lru_cache
 # lru_cache is used for caching the results into memory, for the same input, we don't have to calculate again
-import igraph
 import math
 import argparse
 from tqdm import tqdm
@@ -28,17 +27,6 @@ def intersection_point(m1, c1, m2, c2):
     x = (c2 - c1) / (m1 - m2)
     y = (m1 * c2 - m2 * c1) / (m1 - m2)
     return x, y
-
-def get_directed_igraph_from_adj_matrix(adj_matrix, vertex_labels, weight):
-    """
-    :param adj_matrix: a numpy matrix storing the adjacency matrix
-    :param vertex_labels: the node label, used for indexing the node
-    :param weight: the name of the edge attribute that stores the edge weights
-    :return: igraph.Graph object
-    """
-    g = igraph.Graph.Weighted_Adjacency(adj_matrix.tolist(), mode=igraph.ADJ_DIRECTED, attr=weight)
-    g.vs['label'] = list(vertex_labels)
-    return g
 
 class MarginalIncreaseClustering(object):
 
