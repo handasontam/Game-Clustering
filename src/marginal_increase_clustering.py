@@ -10,6 +10,7 @@ from joblib import Parallel, delayed  # for parallel computing
 import sys
 from ibfs_python3 import ibfs_ext
 from collections import defaultdict
+from src.data_structure import HierarchicalCommunitySolution, HierarchichalPartitionSolution
 
 
 def intersection_point(m1, c1, m2, c2):
@@ -28,7 +29,7 @@ def intersection_point(m1, c1, m2, c2):
 
 class MarginalIncreaseClustering(object):
 
-    def __init__(self, G, beta, weight=None, ignore_nodes=set(), n_jobs=1, verbose=0):
+    def __init__(self, G, beta, weight=None, ignore_nodes=set(), find_weaker_cluster=True, n_jobs=1, verbose=0):
         # Initialize
 
         if not weight:
@@ -47,6 +48,7 @@ class MarginalIncreaseClustering(object):
 
         self.verbose = verbose
         self.G = G
+        self.find_weaker_cluster = find_weaker_cluster
         # sys.setrecursionlimit(max(10000, self.N*10))
 
 
@@ -121,7 +123,6 @@ class MarginalIncreaseClustering(object):
             # The slope of community_1 and community_2
             cardinality_c1 = len(community_1)
             cardinality_c2 = len(community_2)
-
             # The intersection point:
             alpha_bar, f_alpha_bar = intersection_point(m1=cardinality_c1,
                                                         c1=f_0_c1,
@@ -162,7 +163,6 @@ class MarginalIncreaseClustering(object):
                 # pre-order recursion
                 _split_alpha(community_1, community, current_best_y_intercept, ignore_nodes, verbose)
                 _split_alpha(community, community_2, current_best_y_intercept, ignore_nodes, verbose)
-
         _split_alpha(
                         community_1=frozenset({j}),  # singleton community only contains j
                         community_2=frozenset(frozenset(self.G.nodes) - frozenset(ignore_nodes)),  # trivial community contains all vertex
@@ -198,6 +198,10 @@ class MarginalIncreaseClustering(object):
             keys are integers, denoting the cardinality
             values are the alpha values,
         """
+        if len(set(self.G.nodes)-set(ignore_nodes)) == 1:
+            best_ps = {1: set([frozenset(set(self.G.nodes)-set(ignore_nodes))])}
+            alpha_solution = {1: 0}
+            return best_ps, alpha_solution
         # initialize
         best_ps = defaultdict(set)
         best_alpha = {}
@@ -269,26 +273,6 @@ class MarginalIncreaseClustering(object):
         # print({m:ps for m, ps in best_f_0.items() if alpha_solution.get(m, None) is not None})
         return best_ps, alpha_solution
 
-    def get_value_by_alpha(self, dictionary, alpha):
-        if not dictionary:
-            # dicrionary is empty, return empty set
-            return set()
-        if alpha in dictionary:
-            return dictionary[alpha]
-        else:
-            # solution is indexed by the lowerbound alpha
-            # find the corresponding alpha lowerbound from the solution set
-            try:
-                return dictionary[max(k for k in dictionary if k <= alpha)]
-            except ValueError:
-                return set()
-    
-    def get_alpha_prime(self):
-        try:
-            return min(k for k in self.ignore_nodes if self.get_value_by_alpha(self.ignore_nodes, k) != set(self.G))
-        except ValueError:
-            return np.inf
-
     def fit(self):
         """
         Discover weaker communities recursively until there are only
@@ -299,30 +283,27 @@ class MarginalIncreaseClustering(object):
             keys are alpha lower bound
             values are set of set: denoting the partition
         """
-        self.solutions = {}  # key: alpha lower bound, value: frozenset(frozenset(), ...), not include singleton
+        # self.solutions = {}  # key: alpha lower bound, value: frozenset(frozenset(), ...), not include singleton
+        self.solutions = HierarchichalPartitionSolution({})
 
         alpha_prime = -np.inf
-        self.ignore_nodes = defaultdict(set)
+        # self.ignore_nodes = defaultdict(set)
+        self.ignore_nodes = HierarchicalCommunitySolution(defaultdict(set))
         while alpha_prime != np.inf:
-            B, alphas = self.find_dominate_community(ignore_nodes=self.get_value_by_alpha(self.ignore_nodes, alpha_prime))
-            B_alpha = {alphas[cardinality]: B[cardinality] for cardinality in B.keys()}
-            alphas_to_consider = set(alphas.values()).union(set(self.solutions.keys()))
+            B, alphas = self.find_dominate_community(ignore_nodes=self.ignore_nodes.get_value_by_alpha(round(alpha_prime, 8)))
+            B_alpha = {round(alphas[cardinality], 8): B[cardinality] for cardinality in B.keys()}
+            B_alpha = HierarchichalPartitionSolution(B_alpha)
+            # print(B_alpha)
+            alphas_to_consider = set(alphas.values()).union(self.solutions.alpha_set)
             alphas_to_consider = {a for a in alphas_to_consider if a >= 0}  # only consider alpha >= 0
             for alpha in sorted(alphas_to_consider, reverse=True):
-                for c in self.get_value_by_alpha(B_alpha, alpha):
-                    if not c.issubset(self.get_value_by_alpha(self.ignore_nodes, alpha)):
-                        self.solutions[alpha] = self.get_value_by_alpha(self.solutions, alpha).union(frozenset([c]))
-                    self.ignore_nodes[alpha] = self.get_value_by_alpha(self.ignore_nodes, alpha).union(set(c))
-            alpha_prime = self.get_alpha_prime()
-            # break
+                for c in B_alpha.get_value_by_alpha(alpha):
+                    if not c.issubset(self.ignore_nodes.get_value_by_alpha(alpha)):
+                        self.solutions.add_solution(alpha, c)
+                    self.ignore_nodes.add_solution(alpha, c)
+            alpha_prime = self.ignore_nodes.get_alpha_prime(self.G)
+            if not self.find_weaker_cluster:
+                break
         
-        # remove duplicate
-        duplicate_key = []
-        alphas = sorted(list(self.solutions.keys()))
-        for a_1, a_2 in zip(alphas[0:-1], alphas[1:]):
-            if self.solutions[a_1] == self.solutions[a_2]:
-                duplicate_key.append(a_2)
-        for key in duplicate_key:
-            del self.solutions[key]
-        return self.solutions
+        self.solutions.remove_duplicate()
 
