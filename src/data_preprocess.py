@@ -23,7 +23,8 @@ def get_graph_from_data(data_path, directed, weighted):
                 weight = 1
             if directed:
                 DG.add_edges_from([(int(u), int(v), {'weight': weight})])
-                DG.add_edges_from([(int(v), int(u), {'weight': 0})])
+                if not DG.has_edge(int(v), int(u)):
+                    DG.add_edges_from([(int(v), int(u), {'weight': 0})])
             else:
                 # for undirected graph, we add the reverse path for each edge
                 DG.add_edges_from([(int(u), int(v), {'weight': weight})])

@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 
 experiments/
-lfr_experiment.py
+backup/
+results/
+*_plot.py
 
 .vscode/

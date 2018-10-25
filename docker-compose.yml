@@ -1,0 +1,8 @@
+version: '2.1'
+
+services:
+  marginal-increase-clustering:
+    image: marginal-increase-clustering
+    build: .
+    ports:
+      - :

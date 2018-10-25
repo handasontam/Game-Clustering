@@ -108,7 +108,7 @@ class MarginalIncreaseClustering(object):
             return alpha * a - self.beta * b + c
 
 
-    def find_alpha_ps(self, j, ignore_nodes, current_best_y_intercept, verbose):
+    def find_alpha_ps(self, j, ignore_nodes, current_best_y_intercept, verbose, find_first_turning_pt_only=False):
         # variable that will be ammend in the recursion
         ps_t = dict()
         alpha_t = dict()
@@ -161,7 +161,9 @@ class MarginalIncreaseClustering(object):
                 return
             elif f_alpha_intersection < f_alpha_bar:
                 # pre-order recursion
-                _split_alpha(community_1, community, current_best_y_intercept, ignore_nodes, verbose)
+                if not find_first_turning_pt_only:
+                    # only split towards the trivial partition if we just want to get the compressive strength
+                    _split_alpha(community_1, community, current_best_y_intercept, ignore_nodes, verbose)
                 _split_alpha(community, community_2, current_best_y_intercept, ignore_nodes, verbose)
         _split_alpha(
                         community_1=frozenset({j}),  # singleton community only contains j
@@ -172,7 +174,7 @@ class MarginalIncreaseClustering(object):
         return ps_t, alpha_t, f_0_t
 
 
-    def find_dominate_community(self, ignore_nodes):
+    def find_dominate_community(self, ignore_nodes, find_first_turning_pt_only=False):
         """
         find_dominate_community
         Parameters
@@ -223,10 +225,11 @@ class MarginalIncreaseClustering(object):
         best_ps[1] = smallest_in_degree_nodes
         best_alpha[1] = -1
         print('finding C_a_b_t for all t ...')
-        solutions = Parallel(n_jobs=self.n_jobs, verbose=10)(delayed(self.find_alpha_ps)(j=j,
+        solutions = Parallel(n_jobs=self.n_jobs, verbose=1)(delayed(self.find_alpha_ps)(j=j,
                                                         ignore_nodes=frozenset(ignore_nodes), 
                                                         current_best_y_intercept=best_f_0,
-                                                        verbose= self.verbose) for j in (set(self.G) - set(ignore_nodes)))
+                                                        verbose= self.verbose, 
+                                                        find_first_turning_pt_only=find_first_turning_pt_only) for j in (set(self.G) - set(ignore_nodes)))
         for C_a_b_t in solutions:
             ps_t, alpha_t, f_0_t = C_a_b_t
             for slope_t in ps_t.keys():
@@ -288,9 +291,9 @@ class MarginalIncreaseClustering(object):
 
         alpha_prime = -np.inf
         # self.ignore_nodes = defaultdict(set)
-        self.ignore_nodes = HierarchicalCommunitySolution(defaultdict(set))
+        self.ignore_nodes = HierarchicalCommunitySolution({})
         while alpha_prime != np.inf:
-            B, alphas = self.find_dominate_community(ignore_nodes=self.ignore_nodes.get_value_by_alpha(round(alpha_prime, 8)))
+            B, alphas = self.find_dominate_community(ignore_nodes=self.ignore_nodes.get_value_by_alpha(alpha_prime))
             B_alpha = {round(alphas[cardinality], 8): B[cardinality] for cardinality in B.keys()}
             B_alpha = HierarchichalPartitionSolution(B_alpha)
             # print(B_alpha)
@@ -307,3 +310,57 @@ class MarginalIncreaseClustering(object):
         
         self.solutions.remove_duplicate()
 
+    # def get_strength(self):
+    #     """
+    #     Discover weaker communities recursively until there are only
+    #     stop_n_node unlabled nodes
+    #     -----------
+    #     Return
+    #     solutions : dict
+    #         keys are alpha lower bound
+    #         values are set of set: denoting the partition
+    #     """
+    #     # self.solutions = {}  # key: alpha lower bound, value: frozenset(frozenset(), ...), not include singleton
+    #     self.fit()
+    #     if len(self.solutions.get_dict()) == 1:  # all the partition are all singleton (singleton dominate the trival)
+    #         return None            
+    #     alpha = sorted(list(self.solutions.alpha_set))[1]  # second smallest alpha
+
+    #     return alpha
+
+    def get_strength(self):
+        """
+        Discover weaker communities recursively until there are only
+        stop_n_node unlabled nodes
+        -----------
+        Return
+        solutions : dict
+            keys are alpha lower bound
+            values are set of set: denoting the partition
+        """
+        # self.solutions = {}  # key: alpha lower bound, value: frozenset(frozenset(), ...), not include singleton
+        self.solutions = HierarchichalPartitionSolution({})
+
+        alpha_prime = -np.inf
+        # self.ignore_nodes = defaultdict(set)
+        self.ignore_nodes = HierarchicalCommunitySolution({})
+        B, alphas = self.find_dominate_community(ignore_nodes=self.ignore_nodes.get_value_by_alpha(alpha_prime), find_first_turning_pt_only=True)
+        B_alpha = {round(alphas[cardinality], 8): B[cardinality] for cardinality in B.keys()}
+        B_alpha = HierarchichalPartitionSolution(B_alpha)
+        # print(B_alpha)
+        alphas_to_consider = set(alphas.values()).union(self.solutions.alpha_set)
+        alphas_to_consider = {a for a in alphas_to_consider if a >= 0}  # only consider alpha >= 0
+        for alpha in sorted(alphas_to_consider, reverse=True):
+            for c in B_alpha.get_value_by_alpha(alpha):
+                if not c.issubset(self.ignore_nodes.get_value_by_alpha(alpha)):
+                    self.solutions.add_solution(alpha, c)
+                self.ignore_nodes.add_solution(alpha, c)
+        alpha_prime = self.ignore_nodes.get_alpha_prime(self.G)
+
+        self.solutions.remove_duplicate()
+        if len(self.solutions.get_dict()) == 1:  # all the partition are all singleton (singleton dominate the trival)
+            return None            
+        alpha = sorted(list(self.solutions.alpha_set))[1]  # second smallest alpha
+
+        return alpha
+        

@@ -22,7 +22,7 @@ def run(core, data_path, directed, weighted, beta, output_path, ignore_nodes=[],
     DG = get_graph_from_data(data_path=data_path, directed=directed, weighted=weighted)
     MIC = MarginalIncreaseClustering(G=DG, beta=beta, weight='weight', n_jobs=core, verbose=verbose)
     MIC.fit()
-    for alpha, cluster in sorted(MIC.solutions.items()):
+    for alpha, cluster in sorted(MIC.solutions.get_items()):
         print('alpha: ', alpha)
         print('cluster: ', cluster)
     return DG

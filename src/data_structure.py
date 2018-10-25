@@ -124,6 +124,7 @@ class HierarchicalSolution(object):
         self.solution = d
 
     def get_value_by_alpha(self, alpha):
+        alpha = round(alpha, 8)
         if not self.solution:
             # dicrionary is empty, return empty set
             return set()
@@ -175,7 +176,7 @@ class HierarchichalPartitionSolution(HierarchicalSolution):
         '''
         partition: set of set
         '''
-        self.solution[alpha] = self.get_value_by_alpha(alpha).union(frozenset([partition]))
+        self.solution[round(alpha, 8)] = self.get_value_by_alpha(round(alpha, 8)).union(frozenset([partition]))
 
     @property
     def alpha_set(self):
@@ -195,6 +196,6 @@ class HierarchicalCommunitySolution(HierarchicalSolution):
         '''
         community: a set
         '''
-        self.solution[alpha] = self.get_value_by_alpha(alpha).union(set(community))
+        self.solution[round(alpha, 8)] = self.get_value_by_alpha(alpha).union(set(community))
 
 
