@@ -9,8 +9,10 @@ from tqdm import tqdm
 from joblib import Parallel, delayed  # for parallel computing
 import sys
 from ctypes import *
-lib1 = cdll.LoadLibrary('/usr/local/Game-Clustering/ibfs_python3/libboost_python35.so.1.67.0')
-from ibfs_python3 import ibfs_ext
+import os
+curr_path = os.path.dirname(os.path.abspath(os.path.expanduser(__file__)))
+lib1 = cdll.LoadLibrary(os.path.join(curr_path, 'ibfs_python3/libboost_python35.so.1.67.0'))
+from .ibfs_python3 import ibfs_ext
 from collections import defaultdict
 from .data_structure import HierarchicalCommunitySolution, HierarchichalPartitionSolution
 

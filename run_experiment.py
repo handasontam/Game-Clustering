@@ -1,7 +1,7 @@
 from ctypes import *
 import os
-curr_path = os.path.dirname(os.path.abspath(os.path.expanduser(__file__)))
-lib1 = cdll.LoadLibrary(os.path.join(curr_path, 'ibfs_python3/libboost_python35.so.1.67.0'))
+#curr_path = os.path.dirname(os.path.abspath(os.path.expanduser(__file__)))
+#lib1 = cdll.LoadLibrary(os.path.join(curr_path, 'ibfs_python3/libboost_python35.so.1.67.0'))
 import argparse
 import networkx as nx
 from game_clustering.game_clustering import GameClustering
