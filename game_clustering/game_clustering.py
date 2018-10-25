@@ -43,6 +43,9 @@ class GameClustering(object):
             self.weight = weight
         nx.set_node_attributes(G=G, name='cluster_size', values=1)
         G = G.to_directed()
+        for u, v, in G.copy().edges():
+            if not G.has_edge(v, u):
+                G.add_edges_from([(v, u, {'weight': 0})])
         self.in_degrees = dict(G.in_degree(nbunch=G.nodes, weight=weight))
         self.in_degrees_from_ignore_nodes = None
         self.N = G.number_of_nodes()
@@ -228,7 +231,7 @@ class GameClustering(object):
         best_f_0[1] = self.f_a_b(community=frozenset({smallest_in_degree_node}), alpha=0)
         best_ps[1] = smallest_in_degree_nodes
         best_alpha[1] = -1
-        print('finding C_a_b_t for all t ...')
+        #print('finding C_a_b_t for all t ...')
         solutions = Parallel(n_jobs=self.n_jobs, verbose=1)(delayed(self.find_alpha_ps)(j=j,
                                                         ignore_nodes=frozenset(ignore_nodes), 
                                                         current_best_y_intercept=best_f_0,
@@ -313,24 +316,7 @@ class GameClustering(object):
                 break
         
         self.solutions.remove_duplicate()
-
-    # def get_strength(self):
-    #     """
-    #     Discover weaker communities recursively until there are only
-    #     stop_n_node unlabled nodes
-    #     -----------
-    #     Return
-    #     solutions : dict
-    #         keys are alpha lower bound
-    #         values are set of set: denoting the partition
-    #     """
-    #     # self.solutions = {}  # key: alpha lower bound, value: frozenset(frozenset(), ...), not include singleton
-    #     self.fit()
-    #     if len(self.solutions.get_dict()) == 1:  # all the partition are all singleton (singleton dominate the trival)
-    #         return None            
-    #     alpha = sorted(list(self.solutions.alpha_set))[1]  # second smallest alpha
-
-    #     return alpha
+        self.solutions = self.solutions.get_dict()
 
     def get_strength(self):
         """
