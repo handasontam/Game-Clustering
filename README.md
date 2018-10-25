@@ -1,5 +1,5 @@
-# Alpha Beta Communities and Marginal-Increase-Clustering
-Marginal Increase Clustering  
+# Game-Clustering
+Game Clustering 
 [Dr. CHAN Chung](chung.chan@cityu.edu.hk)  
 [Ali Al-Bashabsheh](entropyali@gmail.com)  
 [Handason Tam](handasontam@gmail.com)  
