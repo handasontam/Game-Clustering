@@ -12,25 +12,24 @@ And thanks also to the implementation of Incremental Breadth-First Search
 # Run Experiment
 - install anaconda/miniconda if you haven't: https://conda.io/docs/user-guide/install/index.html
 ```bash
-$ git clone https://github.com/handasontam/Marginal-Increase-Clustering.git
-$ conda create --name abcommunities python=3.5  # create virtual conda environment
-$ source activate abcommunities
+$ git clone https://github.com/handasontam/Game-Clustering.git
+$ conda create --name gameclustering python=3.5  # create virtual conda environment
+$ source activate gameclustering
 $ pip install -r requirements.txt
 $ python run_experiment.py --cpu 2 --data data/example_graph.txt --output /tmp --undirected --unweighted --beta 0.5  # example
 ```
 
 # Usage
 ``` bash
-$ python train_marginal_increase_clustering.py -h                                                                                    
+$ python run_experiment.py -h                                                                                    
 ```
 
 ```
-usage: train_marginal_increase_clustering.py [-h] --cpu CPU --data DATA
+usage: run_experiment.py [-h] --cpu CPU --data DATA
                                              --output OUTPUT [--directed]
                                              [--undirected] [--weighted]
                                              [--unweighted] --beta BETA
 
-finding the alpha-beta dominant communities
 
 optional arguments:
   -h, --help       show this help message and exit
