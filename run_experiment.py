@@ -1,11 +1,12 @@
 from ctypes import *
-lib1 = cdll.LoadLibrary('ibfs_python3/libboost_python35.so.1.67.0')
+import os
+curr_path = os.path.dirname(os.path.abspath(os.path.expanduser(__file__)))
+lib1 = cdll.LoadLibrary(os.path.join(curr_path, 'ibfs_python3/libboost_python35.so.1.67.0'))
 import argparse
 import networkx as nx
-from src.marginal_increase_clustering import MarginalIncreaseClustering
-from src.data_preprocess import get_graph_from_data
+from game_clustering.game_clustering import GameClustering
+from game_clustering.data_preprocess import get_graph_from_data
 import numpy as np
-import os
 import pickle
 
 
@@ -20,9 +21,9 @@ def run(core, data_path, directed, weighted, beta, output_path, ignore_nodes=[],
     """
     # process the data
     DG = get_graph_from_data(data_path=data_path, directed=directed, weighted=weighted)
-    MIC = MarginalIncreaseClustering(G=DG, beta=beta, weight='weight', n_jobs=core, verbose=verbose)
-    MIC.fit()
-    for alpha, cluster in sorted(MIC.solutions.get_items()):
+    game_clustering = GameClustering(G=DG, beta=beta, weight='weight', n_jobs=core, verbose=verbose)
+    game_clustering.fit()
+    for alpha, cluster in sorted(game_clustering.solutions.get_items()):
         print('alpha: ', alpha)
         print('cluster: ', cluster)
     return DG

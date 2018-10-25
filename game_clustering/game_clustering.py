@@ -8,9 +8,11 @@ import argparse
 from tqdm import tqdm
 from joblib import Parallel, delayed  # for parallel computing
 import sys
+from ctypes import *
+lib1 = cdll.LoadLibrary('/usr/local/Game-Clustering/ibfs_python3/libboost_python35.so.1.67.0')
 from ibfs_python3 import ibfs_ext
 from collections import defaultdict
-from src.data_structure import HierarchicalCommunitySolution, HierarchichalPartitionSolution
+from .data_structure import HierarchicalCommunitySolution, HierarchichalPartitionSolution
 
 
 def intersection_point(m1, c1, m2, c2):
@@ -27,7 +29,7 @@ def intersection_point(m1, c1, m2, c2):
     y = (m1 * c2 - m2 * c1) / (m1 - m2)
     return x, y
 
-class MarginalIncreaseClustering(object):
+class GameClustering(object):
 
     def __init__(self, G, beta, weight=None, ignore_nodes=set(), find_weaker_cluster=True, n_jobs=1, verbose=0):
         # Initialize
